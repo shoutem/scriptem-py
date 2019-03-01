@@ -1,0 +1,23 @@
+{
+  "prod": {
+    "app_endpoint": "apps.api.shoutem.com",
+    "auth_endpoint": "apps.api.shoutem.com",
+    "extension_endpoint": "extensions.api.shoutem.com",
+    "billing_endpoint": "billing.api.shoutem.com",
+    "loyalty_endpoint": "loyaly.api.shoutem.com"
+  },
+  "qa": {
+    "app_endpoint": "apps.api.qa.sauros.hr",
+    "auth_endpoint": "auth.api.qa.sauros.hr",
+    "extension_endpoint": "extensions.api.qa.sauros.hr",
+    "billing_endpoint": "billing.api.qa.sauros.hr",
+    "loyalty_endpoint": "loyaly.api.qa.sauros.hr"
+  },
+  "dev": {
+    "app_endpoint": "apps.api.dev.sauros.hr",
+    "auth_endpoint": "auth.api.dev.sauros.hr",
+    "extension_endpoint": "extensions.api.dev.sauros.hr",
+    "billing_endpoint": "billing.api.dev.sauros.hr",
+    "loyalty_endpoint": "loyaly.api.dev.sauros.hr"
+  }
+}
