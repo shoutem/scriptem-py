@@ -11,7 +11,11 @@ def get_attr(obj, path):
 
 
 def execute(username, password, name, count, env):
-    print("Creating new apps for user {}".format(username))
+    print("[{}] Creating {} new app(s) for user {}".format(env, count, username))
+    if not prompt.yes_no("Do you want to continue?"):
+        exit(0)
+
+    # create new apps by cloning the base app
     endpoint = config.get_apps_endpoint(env) + "/v1/apps/base/actions/clone"
     for i in range(count):
         app_name = "{} {}".format(name, i + 1) if count > 1 else name
@@ -57,5 +61,5 @@ def main():
 if __name__ == '__main__':
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    from shared import network, auth, config
+    from shared import network, auth, config, prompt
     main()

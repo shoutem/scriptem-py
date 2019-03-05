@@ -4,7 +4,7 @@ import json_api_doc
 import re
 
 def execute(moderator_email, moderator_password, app_filter, username, password, env):
-    print("Adding moderator {}".format(username))
+    print("[{}] Adding moderator {}".format(env, moderator_email))
 
     # get the agency for the provided owner
     agency_endpoint = config.get_apps_endpoint(env) + "/v1/agencies/mine"
@@ -15,7 +15,8 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
     moderators_endpoint = config.get_apps_endpoint(env) + "/v1/moderators"
     moderators_res = network.get(*auth.as_user(username, password, env, moderators_endpoint, { 
         "query": {
-            "filter[agency]": agency["id"]
+            "filter[agency]": agency["id"],
+            "page[limit]": 99999999
         }
     }))
     moderators = json_api_doc.parse(moderators_res.json())
@@ -45,7 +46,11 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
 
     # get all applications for the provided owner(username, password)
     apps_endpoint = config.get_apps_endpoint(env) + "/v1/apps"
-    apps_res = network.get(*auth.as_user(username, password, env, apps_endpoint))
+    apps_res = network.get(*auth.as_user(username, password, env, apps_endpoint, {
+        "query": {
+            "page[limit]": 99999999
+        }
+    }))
     apps = json_api_doc.parse(apps_res.json())
 
     # filter apps out by those that match the provided regex
@@ -55,7 +60,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
     apps_name_id = os.linesep.join(map(lambda app: "{} ({})".format(app["name"], app["id"]), filtered))
     print("Moderator {} will be added to following apps: {}{}".format(moderator_email, os.linesep, apps_name_id))
     if not prompt.yes_no("Do you want to continue?"):
-        exit()
+        exit(0)
 
     for app in filtered:
         add_moderator_endpoint = "{}/{}/moderated-applications".format(moderators_endpoint, moderator["id"])

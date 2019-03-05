@@ -10,8 +10,8 @@ def yes_no(question, default="yes"):
 
     The "answer" return value is one of "yes" or "no".
     """
-    valid = {"yes":"yes",   "y":"yes",  "ye":"yes",
-             "no":"no",     "n":"no"}
+    valid = {"yes": True,  "y": True,  "ye": True,
+             "no": False,  "n": False}
     if default == None:
         prompt = " [y/n] "
     elif default == "yes":
