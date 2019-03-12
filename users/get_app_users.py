@@ -39,7 +39,7 @@ def main():
     if len(args) != 1:
         parser.error("You must provide app_id")
     if options.env not in ['prod', 'qa', 'dev']:
-        parser.error("Incorrect number of arguments")
+        parser.error("Incorrect environment {}".format(options.env))
 
     execute(args[0], options.limit, options.env)
 

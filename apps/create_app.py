@@ -54,7 +54,7 @@ def main():
     if len(args) != 0:
         parser.error("Too many arguments")
     if options.env not in ['prod', 'qa', 'dev']:
-        parser.error("Incorrect number of arguments")
+        parser.error("Incorrect environment {}".format(options.env))
 
     execute(options.username, options.password, options.title,  options.count, options.env)
 

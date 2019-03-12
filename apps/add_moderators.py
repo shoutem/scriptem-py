@@ -103,7 +103,7 @@ def main():
     if len(args) != 2:
         parser.error("You must provide moderator username and password")
     if options.env not in ['prod', 'qa', 'dev']:
-        parser.error("Incorrect number of arguments")
+        parser.error("Incorrect environment {}".format(options.env))
 
     execute(args[0], args[1], options.regex, options.username, options.password, options.env)
 
