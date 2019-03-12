@@ -2,7 +2,7 @@ import base64
 import json
 import os
 import json_api_doc
-from . import config, network
+from . import config, network, errors
 
 tokens = {}
 
@@ -37,6 +37,7 @@ def _load_user_token(username, password, env):
     })
     
     parsed_refresh = json_api_doc.parse(refresh_response.json())
+    errors.exit_if_errors(parsed_refresh)
     
     access_response = network.post(token_endpoint, {
         "headers": {

@@ -21,14 +21,14 @@ def main():
                       help="Decode from base64 before printing",
                       action="store_true", dest="decode", default=False)
     parser.add_option("-e", "--env",
-                      help="Environment to run this script on, default: 'qa', options are 'prod', 'qa', 'dev'",
+                      help="Environment to run this script on, default: 'qa', options are 'prod', 'qa', 'dev', 'local'",
                       type="string", dest="env", default="qa")
     
     (options, args) = parser.parse_args()
     
     if len(args) != 2:
         parser.error("You must provide username and password")
-    if options.env not in ['prod', 'qa', 'dev']:
+    if options.env not in ['prod', 'qa', 'dev', 'local']:
         parser.error("Incorrect environment {}".format(options.env))
 
     execute(args[0], args[1], options.decode, options.env)

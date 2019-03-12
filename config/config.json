@@ -22,5 +22,13 @@
     "billing_endpoint": "https://billing.api.dev.sauros.hr",
     "loyalty_endpoint": "https://loyaly.api.dev.sauros.hr",
     "legacy_endpoint": "https://v4.api.dev.sauros.hr"
+  },
+  "local": {
+    "app_endpoint": "http://localhost:3003",
+    "auth_endpoint": "http://localhost:3010",
+    "extension_endpoint": "http://localhost:3002",
+    "billing_endpoint": "http://localhost:3005",
+    "loyalty_endpoint": "http://localhost:3006",
+    "legacy_endpoint": "http://v4.shoutem.local"
   }
 }

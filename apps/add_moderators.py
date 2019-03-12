@@ -10,6 +10,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
     agency_endpoint = config.get_apps_endpoint(env) + "/v1/agencies/mine"
     agency_res = network.get(*auth.as_user(username, password, env, agency_endpoint))
     agency = json_api_doc.parse(agency_res.json())
+    errors.exit_if_errors(agency)
 
     # get existing moderators for agency
     moderators_endpoint = config.get_apps_endpoint(env) + "/v1/moderators"
@@ -92,7 +93,7 @@ def main():
                       help="Password of the agency owner",
                       type="string", dest="password", default="password")
     parser.add_option("-e", "--env",
-                      help="Environment to run this script on, default: 'qa', options are 'prod', 'qa', 'dev'",
+                      help="Environment to run this script on, default: 'qa', options are 'prod', 'qa', 'dev', 'local'",
                       type="string", dest="env", default="qa")
     parser.add_option("-r", "--regex",
                       help="Regex to mach the application name, by default moderator will be added for every app by the specified owner",
@@ -102,7 +103,7 @@ def main():
     
     if len(args) != 2:
         parser.error("You must provide moderator username and password")
-    if options.env not in ['prod', 'qa', 'dev']:
+    if options.env not in ['prod', 'qa', 'dev', 'local']:
         parser.error("Incorrect environment {}".format(options.env))
 
     execute(args[0], args[1], options.regex, options.username, options.password, options.env)
@@ -110,5 +111,5 @@ def main():
 if __name__ == '__main__':
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    from shared import network, auth, config, prompt
+    from shared import network, auth, config, prompt, errors
     main()

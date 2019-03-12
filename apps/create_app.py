@@ -46,14 +46,14 @@ def main():
                     help="New app title, if count is larger then 1 it will be numbered, ie. Your app name 1, Your app name 2...",
                     type="string", dest="title", default="New App")
     parser.add_option("-e", "--env",
-                      help="Environment to run this script on, default: 'qa', options are 'prod', 'qa', 'dev'",
+                      help="Environment to run this script on, default: 'qa', options are 'prod', 'qa', 'dev', 'local'",
                       type="string", dest="env", default="qa")
     
     (options, args) = parser.parse_args()
     
     if len(args) != 0:
         parser.error("Too many arguments")
-    if options.env not in ['prod', 'qa', 'dev']:
+    if options.env not in ['prod', 'qa', 'dev', 'local']:
         parser.error("Incorrect environment {}".format(options.env))
 
     execute(options.username, options.password, options.title,  options.count, options.env)

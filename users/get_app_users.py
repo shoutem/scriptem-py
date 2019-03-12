@@ -31,14 +31,14 @@ def main():
                       help="Maximum number of users to get",
                       type="int", dest="limit", default=100000)
     parser.add_option("-e", "--env",
-                      help="Environment to run this script on, default: 'qa', options are 'prod', 'qa', 'dev'",
+                      help="Environment to run this script on, default: 'qa', options are 'prod', 'qa', 'dev', 'local'",
                       type="string", dest="env", default="qa")
     
     (options, args) = parser.parse_args()
     
     if len(args) != 1:
         parser.error("You must provide app_id")
-    if options.env not in ['prod', 'qa', 'dev']:
+    if options.env not in ['prod', 'qa', 'dev', 'local']:
         parser.error("Incorrect environment {}".format(options.env))
 
     execute(args[0], options.limit, options.env)
