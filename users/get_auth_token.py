@@ -1,13 +1,17 @@
 from optparse import OptionParser
 import base64
 import json
+import re
+
 
 def execute(username, password, decode, env):
     token = auth.get_user_token(username, password, env)
 
     if decode:
-        for part in map(base64.b64decode, token.split(".")[:2]): # signature part of JWT is not Base64
-            parsed = json.loads(part.decode('utf-8'))
+        for part in token.split(".")[:2]: # signature part of JWT is not Base64
+            # JWT does not add padding to tokens, so we add it back becase 'b64decode' will complain
+            decoded = base64.b64decode(part + '=' * (-len(part) % 4))
+            parsed = json.loads(decoded)
             print(json.dumps(parsed, indent=4))
     else:
         print(token)
