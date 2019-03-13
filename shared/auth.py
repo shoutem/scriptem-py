@@ -17,15 +17,17 @@ def as_admin(env, uri, opts={}):
     return uri, opts
 
 
-def get_user_token(username, password, env):
+def get_user_token(username, password, env, realm=0):
     if (username, env) not in tokens:
-        _load_user_token(username, password, env)
+        _load_user_token(username, password, env, realm)
     
     return tokens[(username, env)]
 
 
-def _load_user_token(username, password, env):
-    token_endpoint = "{}/v1/tokens".format(config.get_auth_endpoint(env))
+def _load_user_token(username, password, env, realm):
+    realm_part = "realms/externalReference:{}/".format(realm) if realm != 0 else ""
+        
+    token_endpoint = "{}/v1/{}tokens".format(config.get_auth_endpoint(env), realm_part)
     creds = base64.b64encode("{}:{}".format(username, password).encode("UTF-8")).decode("UTF-8")
     refresh_response = network.post(token_endpoint, {
         "headers": {

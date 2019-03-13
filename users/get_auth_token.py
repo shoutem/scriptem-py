@@ -4,8 +4,8 @@ import json
 import re
 
 
-def execute(username, password, decode, env):
-    token = auth.get_user_token(username, password, env)
+def execute(username, password, realm, decode, env):
+    token = auth.get_user_token(username, password, env, realm)
 
     if decode:
         for part in token.split(".")[:2]: # signature part of JWT is not Base64
@@ -24,6 +24,9 @@ def main():
     parser.add_option("-d", "--decode",
                       help="Decode from base64 before printing",
                       action="store_true", dest="decode", default=False)
+    parser.add_option("-r", "--realm",
+                      help="ID of realm (application) for which to get the token, default is builder (0)",
+                      dest="realm", default=0)
     parser.add_option("-e", "--env",
                       help="Environment to run this script on, default: 'qa', options are 'prod', 'qa', 'dev', 'local'",
                       type="string", dest="env", default="qa")
@@ -35,7 +38,7 @@ def main():
     if options.env not in ['prod', 'qa', 'dev', 'local']:
         parser.error("Incorrect environment {}".format(options.env))
 
-    execute(args[0], args[1], options.decode, options.env)
+    execute(args[0], args[1], options.realm, options.decode, options.env)
 
 
 if __name__ == '__main__':
