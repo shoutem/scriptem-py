@@ -17,6 +17,15 @@ def get(uri, opts={}):
     
     return requests.get(uri, headers=headers, params=query)
 
+
+def patch(uri, opts={}):
+    headers = opts.get("headers", {})
+    headers.update(base_post_headers)
+    body = opts.get("body", {})
+
+    return requests.patch(uri, headers=headers, json=body)
+
+
 def post(uri, opts={}):
     headers = opts.get("headers", {})
     headers.update(base_post_headers)
