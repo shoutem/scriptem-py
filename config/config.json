@@ -17,7 +17,7 @@
   },
   "dev": {
     "app_endpoint": "https://apps.api.dev.sauros.hr",
-    "auth_endpoint": "https://auth.api.dev.sauros.hr",
+    "auth_endpoint": "http://auth.api.dev.sauros.hr",
     "extension_endpoint": "https://extensions.api.dev.sauros.hr",
     "billing_endpoint": "https://billing.api.dev.sauros.hr",
     "loyalty_endpoint": "https://loyaly.api.dev.sauros.hr",

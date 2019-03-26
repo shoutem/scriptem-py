@@ -48,7 +48,8 @@ def _load_user_token(username, password, env, realm):
         "body": json_api_doc.encode({
             "$type": "shoutem.auth.tokens",
             "tokenType": "access-token",
-            "subjectType": "user"
+            "subjectType": "user",
+            "compressionType": "gzip"
         })
     })
 
