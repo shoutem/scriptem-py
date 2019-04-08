@@ -54,4 +54,6 @@ def _load_user_token(username, password, env, realm):
     })
 
     access_parsed = json_api_doc.parse(access_response.json())
+    errors.exit_if_errors(access_parsed)
+
     tokens[(username, env)] = access_parsed["token"]

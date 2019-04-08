@@ -29,6 +29,6 @@
     "extension_endpoint": "http://localhost:3002",
     "billing_endpoint": "http://localhost:3005",
     "loyalty_endpoint": "http://localhost:3006",
-    "legacy_endpoint": "http://v4.shoutem.local"
+    "legacy_endpoint": "http://v4.api.shoutem.local"
   }
 }

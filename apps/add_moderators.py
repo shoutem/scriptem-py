@@ -23,8 +23,10 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
     moderators = json_api_doc.parse(moderators_res.json())
     existing_moderator = list(filter(lambda mod: mod["user"]["username"] == moderator_email, moderators))
 
-    # create a new moderator for agency if one does not exist already
-    if not existing_moderator and prompt.yes_no("Moderator does not exist. Do you want to create it?"): 
+    if existing_moderator:
+        moderator = existing_moderator[0]
+    # ask to create a new moderator for agency if one does not exist already
+    elif prompt.yes_no("Moderator does not exist. Do you want to create it?"):
         create_moderator_endpoint = config.get_apps_endpoint(env) + "/v1/moderators/actions/create-for-user"
         create_moderator_res = network.post(*auth.as_user(username, password, env, create_moderator_endpoint, {
             "body": json_api_doc.encode({
@@ -37,13 +39,15 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
                 }
             })
         }))
-        
+
         try:
             moderator = json_api_doc.parse(create_moderator_res.json())
+            errors.exit_if_errors(moderator)
         except AttributeError:
             raise Exception("User with such email/password already exists")
+    # exit if no moderators and user refused to create new one
     else:
-        moderator = existing_moderator[0]
+        exit(0)
 
     # get all applications for the provided owner(username, password)
     apps_endpoint = config.get_apps_endpoint(env) + "/v1/apps"
@@ -70,7 +74,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
                 "$type": "shoutem.core.moderator-applications",
                 "role": "content-editor",
                 "application": {
-                    "$type":"shoutem.core.applications", 
+                    "$type":"shoutem.core.applications",
                     "id": app["id"]
                 }
             })
