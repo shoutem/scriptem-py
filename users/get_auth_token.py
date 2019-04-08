@@ -3,18 +3,10 @@ import base64
 import json
 import re
 
-
 def execute(username, password, realm, decode, env):
-    token = auth.get_user_token(username, password, env, realm)
+    accessJwt = auth.get_user_token(username, password, env, realm)
 
-    if decode:
-        for part in token.split(".")[:2]: # signature part of JWT is not Base64
-            # JWT does not add padding to tokens, so we add it back becase 'b64decode' will complain
-            decoded = base64.b64decode(part + '=' * (-len(part) % 4))
-            parsed = json.loads(decoded)
-            print(json.dumps(parsed, indent=4))
-    else:
-        print(token)
+    tokens.decode(accessJwt) if decode else print(accessJwt)
 
 
 def main():
@@ -45,4 +37,5 @@ if __name__ == '__main__':
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
     from shared import network, auth, config
+    import tokens
     main()
