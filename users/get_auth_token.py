@@ -24,7 +24,7 @@ def main():
                       type="string", dest="env", default="qa")
     
     (options, args) = parser.parse_args()
-    
+
     if len(args) != 2:
         parser.error("You must provide username and password")
     if options.env not in ['prod', 'qa', 'dev', 'local']:

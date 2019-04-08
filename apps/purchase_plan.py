@@ -3,6 +3,7 @@ from optparse import OptionParser
 import json_api_doc
 import re
 
+
 def execute(plan_id, app_filter, username, password, env):
     billing_api = config.get_billing_endpoint(env)
     plan_res = network.get(*auth.as_admin(env, "{}/v1/plans/{}".format(billing_api, plan_id)))
@@ -47,7 +48,7 @@ def execute(plan_id, app_filter, username, password, env):
         }))
 
         purchase = json_api_doc.parse(purchase_res.json())
-        
+
         if "errors" in purchase:
             print(purchase["errors"][0]["detail"] or purchase["errors"][0]["code"])
         else:
@@ -71,13 +72,14 @@ def main():
                       type="string", dest="regex", default=".*")
 
     (options, args) = parser.parse_args()
-    
+
     if len(args) != 1:
         parser.error("You must provide plan ID (for reference: Postman > Billing > Plan > Get All)")
     if options.env not in ['prod', 'qa', 'dev', 'local']:
         parser.error("Incorrect number of arguments")
 
     execute(args[0], options.regex, options.username, options.password, options.env)
+
 
 if __name__ == '__main__':
     from os import sys, path

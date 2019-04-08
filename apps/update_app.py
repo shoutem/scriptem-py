@@ -76,8 +76,6 @@ def execute(extensions_with_version, app_filter, user, env):
                 
             print("Extension installation {} updated for app {}".format(extension_name, app["id"]))
 
-            
-
 
 def main():
     usage = "usage: %prog [options] plan_id"

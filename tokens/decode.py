@@ -4,6 +4,7 @@ import base64
 import json
 import zlib
 
+
 def decompress(obj, new_obj={}):
     for k, v in obj.items():
         if isinstance(v, dict):
@@ -24,6 +25,7 @@ def decompress(obj, new_obj={}):
 
     return new_obj
 
+
 def execute(token):
     parts = token.split(".")
 
@@ -39,7 +41,7 @@ def execute(token):
         decompressed = decompress(parsed)
 
         print(json.dumps(decompressed, indent=4))
-    
+
 
 def main():
     usage = "usage: %prog token"
@@ -51,6 +53,7 @@ def main():
         parser.error("You must provide token to decode")
 
     execute(args[0])
+
 
 if __name__ == '__main__':
     from os import sys, path

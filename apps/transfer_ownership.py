@@ -6,7 +6,7 @@ import re
 
 def execute(src_id, dest_id, app_filter, recreate_subscription, env):
     users_endpoint = config.get_auth_endpoint(env) + "/v1/realms/alias:default/users/legacyUser:{}"
-    # get source and destination users 
+    # get source and destination users, mostly for the sake of ensuring user inputed the right data
     src_user_res = network.get(*auth.as_admin(env, users_endpoint.format(src_id)))
     src_user = json_api_doc.parse(src_user_res.json())
     errors.exit_if_errors(src_user)
@@ -37,10 +37,12 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
     dest_account = json_api_doc.parse(dest_account_res.json())
     errors.exit_if_errors(dest_account)
 
+    # we don't support different account types because it's too complicated, man
     if src_account["accountType"] != dest_account["accountType"]:
         print("Source and destination account must have the same account type")
         exit(1)
 
+    # some accounts have old application subnscription groups which could cause confusion
     if src_account["applicationPlanGroup"] != dest_account["applicationPlanGroup"]:
         print("Source and destination account must have the same application plan group")
         exit(1)
@@ -60,6 +62,7 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
     if not prompt.yes_no("Do you want to continue?"):
         exit(0)
 
+    # we only consider application subscription, agency transfer is not supported, just their apps
     is_valid_subscription = lambda sub, app: (
         sub["productType"] == "application"
         and sub["productId"] == app["id"]
@@ -72,7 +75,8 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
     for app in filtered:
         existing_subscriptions = list(filter(lambda sub: is_valid_subscription(sub, app), src_subscriptions))
 
-        # cancel existing subscription if it exists
+        # cancel existing subscription if it exists, we can recreate it later
+        # hopefully the app owner thansfer step bellow won't fail
         if existing_subscriptions:
             subscription = existing_subscriptions[0]
             unsubscribe_res = network.post(*auth.as_admin(
@@ -86,6 +90,8 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
             errors.exit_if_errors(canceled_subscriptions)
             print("[{}] Canceled subscription for app {} ({})".format(env, app["id"], app["name"]))
 
+        # .NET fails to parse included data in POST body, so we create JSON:API doc manually here
+        # NodeJS services do not have this issue
         update_app_res = network.patch(*auth.as_admin(env, update_app_endpoint.format(app["id"]), {
             "body": {
                 'data': {
@@ -105,7 +111,8 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
         errors.exit_if_errors(update_app)
         print("[{}] Changed owner for app {} ({}) to {}".format(env, app["id"], app["name"], dest_user["username"]))
 
-        # create a new subscription on the app if it exists
+        # create a new subscription if user specified so and the previous owner had a subscription
+        # this will cause new invoice on the new account, this probably won't be an issue with agencies
         if recreate_subscription and existing_subscriptions:
             subscription = existing_subscriptions[0]
             purchase_res = network.post(*auth.as_admin(env, subscribe_endpoint, {
@@ -136,17 +143,18 @@ def main():
                       help="Recreate the subscription on the app, True by default",
                       action="store_true", dest="subscribe", default=True)
     parser.add_option("-r", "--regex",
-                      help="Regex to mach the application name, by default moderator all apps will be transfered",
+                      help="Regex to mach the application name, by default all apps will be transfered",
                       type="string", dest="regex", default=".*")
 
     (options, args) = parser.parse_args()
     
     if len(args) != 2:
-        parser.error("You must provide moderator username and password")
+        parser.error("You must provide a source and destination user id")
     if options.env not in ['prod', 'qa', 'dev', 'local']:
         parser.error("Incorrect environment {}".format(options.env))
 
     execute(args[0], args[1], options.regex, options.subscribe, options.env)
+
 
 if __name__ == '__main__':
     from os import sys, path
