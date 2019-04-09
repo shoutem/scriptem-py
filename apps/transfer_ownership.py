@@ -68,8 +68,8 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
         and sub["productId"] == app["id"]
         and sub["status"] == "subscribed"
     )
-    subscribe_endpoint = config.get_billing_endpoint(env) + "/v1/accounts/{}/subscriptions/{}/actions/subscribe"
-    unsubscribe_endpoint = config.get_billing_endpoint(env) + "/v1/accounts/{}/subscriptions/{}/actions/cancel"
+    subscribe_endpoint = config.get_billing_endpoint(env) + "/v1/accounts/{}/subscriptions/application:{}/actions/recurly/subscribe"
+    unsubscribe_endpoint = config.get_billing_endpoint(env) + "/v1/accounts/{}/subscriptions/{}/actions/recurly/cancel"
     update_app_endpoint = config.get_legacy_endpoint(env) + "/v1/apps/{}"
 
     for app in filtered:
@@ -115,21 +115,22 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
         # this will cause new invoice on the new account, this probably won't be an issue with agencies
         if recreate_subscription and existing_subscriptions:
             subscription = existing_subscriptions[0]
-            purchase_res = network.post(*auth.as_admin(env, subscribe_endpoint, {
-                "body": json_api_doc.encode(
-                    data={
+            purchase_res = network.post(*auth.as_admin(
+                env,
+                subscribe_endpoint.format(dest_account["id"], app["id"]), 
+                { "body": json_api_doc.encode(
+                    {
                         "$type": "shoutem.billing.recurly-subscribe-actions",
                         "billingInfoToken": None,
                         "plan": {
-                            "$type":"shoutem.billing.plans", 
+                            "$type":"shoutem.billing.plans",
                             "id": subscription["plan"]["id"]
                         }
                     })
             }))
 
             purchase = json_api_doc.parse(purchase_res.json())
-            canceled_subscriptions = json_api_doc.parse(unsubscribe_res.json())
-            errors.exit_if_errors(canceled_subscriptions)
+            errors.exit_if_errors(purchase)
             print("[{}] Created subscription for app {} ({}) with plan {}".format(env, app["id"], app["name"], subscription["plan"]["id"]))
 
 
