@@ -1,7 +1,7 @@
 {
   "prod": {
     "app_endpoint": "https://apps.api.shoutem.com",
-    "auth_endpoint": "https://apps.api.shoutem.com",
+    "auth_endpoint": "https://auth.api.shoutem.com",
     "extension_endpoint": "https://extensions.api.shoutem.com",
     "billing_endpoint": "https://billing.api.shoutem.com",
     "loyalty_endpoint": "https://loyaly.api.shoutem.com",

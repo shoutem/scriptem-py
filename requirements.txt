@@ -1,2 +1,2 @@
 requests==2.21.0
-git+git://github.com/TopHatCroat/json-api-doc
+json-api-doc==0.7.0
