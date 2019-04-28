@@ -19,7 +19,7 @@ def execute(app_id, limit, env):
 
     print(','.join(fields))
 
-    for d in json_api_doc.parse(input_json):
+    for d in json_api_doc.deserialize(input_json):
         attributes = [ get_attr(d, attr) for attr in fields ]
         print(','.join(attributes))
 

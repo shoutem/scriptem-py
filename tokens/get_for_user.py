@@ -2,11 +2,12 @@ from optparse import OptionParser
 import base64
 import json
 import re
+from decode import execute as decode
 
-def execute(username, password, realm, decode, env):
+def execute(username, password, realm, decodeToken, env):
     accessJwt = auth.get_user_token(username, password, env, realm)
 
-    tokens.decode(accessJwt) if decode else print(accessJwt)
+    decode(accessJwt) if decodeToken else print(accessJwt)
 
 
 def main():
@@ -37,5 +38,4 @@ if __name__ == '__main__':
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
     from shared import network, auth, config
-    import tokens
     main()

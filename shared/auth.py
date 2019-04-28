@@ -33,19 +33,19 @@ def _load_user_token(username, password, env, realm):
         "headers": {
             "Authorization": "Basic {}".format(creds)
         },
-        "body": json_api_doc.encode({
+        "body": json_api_doc.serialize({
             "$type": "shoutem.auth.tokens"
         })
     })
     
-    parsed_refresh = json_api_doc.parse(refresh_response.json())
+    parsed_refresh = json_api_doc.deserialize(refresh_response.json())
     errors.exit_if_errors(parsed_refresh)
     
     access_response = network.post(token_endpoint, {
         "headers": {
             "Authorization": "Bearer {}".format(parsed_refresh["token"])
         },
-        "body": json_api_doc.encode({
+        "body": json_api_doc.serialize({
             "$type": "shoutem.auth.tokens",
             "tokenType": "access-token",
             "subjectType": "user",
@@ -53,7 +53,7 @@ def _load_user_token(username, password, env, realm):
         })
     })
 
-    access_parsed = json_api_doc.parse(access_response.json())
+    access_parsed = json_api_doc.deserialize(access_response.json())
     errors.exit_if_errors(access_parsed)
 
     tokens[(username, env)] = access_parsed["token"]

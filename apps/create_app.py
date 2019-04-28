@@ -19,14 +19,14 @@ def execute(username, password, name, count, env):
     endpoint = config.get_apps_endpoint(env) + "/v1/apps/base/actions/clone"
     for i in range(count):
         app_name = "{} {}".format(name, i + 1) if count > 1 else name
-        body = json_api_doc.encode({
+        body = json_api_doc.serialize({
             "$type": "shoutem.core.application-clones",
             "name": app_name,
             "alias": "base"
         })
 
         res = network.post(*auth.as_user(username, password, env, endpoint, { "body": body }))
-        res_parsed = json_api_doc.parse(res.json())
+        res_parsed = json_api_doc.deserialize(res.json())
         print(res_parsed["id"])
 
 

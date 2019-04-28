@@ -8,11 +8,11 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
     users_endpoint = config.get_auth_endpoint(env) + "/v1/realms/alias:default/users/legacyUser:{}"
     # get source and destination users, mostly for the sake of ensuring user inputed the right data
     src_user_res = network.get(*auth.as_admin(env, users_endpoint.format(src_id)))
-    src_user = json_api_doc.parse(src_user_res.json())
+    src_user = json_api_doc.deserialize(src_user_res.json())
     errors.exit_if_errors(src_user)
      
     dest_user_res = network.get(*auth.as_admin(env, users_endpoint.format(dest_id)))
-    dest_user = json_api_doc.parse(dest_user_res.json())
+    dest_user = json_api_doc.deserialize(dest_user_res.json())
     errors.exit_if_errors(dest_user)
 
     print("[{}] Transfering apps from {} to {}".format(env, src_user["username"], dest_user["username"]))
@@ -25,16 +25,16 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
             "page[limit]": 99999999
         }
     }))
-    apps = json_api_doc.parse(apps_res.json())
+    apps = json_api_doc.deserialize(apps_res.json())
     errors.exit_if_errors(apps)    
 
     account_endpoint = config.get_billing_endpoint(env) + "/v1/accounts/user:{}"
     src_account_res = network.get(*auth.as_admin(env, account_endpoint.format(src_id)))
-    src_account = json_api_doc.parse(src_account_res.json())
+    src_account = json_api_doc.deserialize(src_account_res.json())
     errors.exit_if_errors(src_account)
 
     dest_account_res = network.get(*auth.as_admin(env, account_endpoint.format(dest_id)))
-    dest_account = json_api_doc.parse(dest_account_res.json())
+    dest_account = json_api_doc.deserialize(dest_account_res.json())
     errors.exit_if_errors(dest_account)
 
     # we don't support different account types because it's too complicated, man
@@ -49,7 +49,7 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
 
     subscription_endpoint = config.get_billing_endpoint(env) + "/v1/accounts/user:{}/subscriptions"
     src_subscriptions_res = network.get(*auth.as_admin(env, subscription_endpoint.format(src_id)))
-    src_subscriptions = json_api_doc.parse(src_subscriptions_res.json())
+    src_subscriptions = json_api_doc.deserialize(src_subscriptions_res.json())
     errors.exit_if_errors(src_subscriptions)
 
     # filter apps out by those that match the provided regex
@@ -82,11 +82,11 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
             unsubscribe_res = network.post(*auth.as_admin(
                 env,
                 unsubscribe_endpoint.format(src_account["id"], subscription["id"]),
-                { "body": json_api_doc.encode({
+                { "body": json_api_doc.serialize({
                     "$type": "shoutem.billing.subscriptions"
                 })
             }))
-            canceled_subscriptions = json_api_doc.parse(unsubscribe_res.json())
+            canceled_subscriptions = json_api_doc.deserialize(unsubscribe_res.json())
             errors.exit_if_errors(canceled_subscriptions)
             print("[{}] Canceled subscription for app {} ({})".format(env, app["id"], app["name"]))
 
@@ -107,7 +107,7 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
                 }
             }
         }))
-        update_app = json_api_doc.parse(update_app_res.json())
+        update_app = json_api_doc.deserialize(update_app_res.json())
         errors.exit_if_errors(update_app)
         print("[{}] Changed owner for app {} ({}) to {}".format(env, app["id"], app["name"], dest_user["username"]))
 
@@ -118,7 +118,7 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
             purchase_res = network.post(*auth.as_admin(
                 env,
                 subscribe_endpoint.format(dest_account["id"], app["id"]), 
-                { "body": json_api_doc.encode(
+                { "body": json_api_doc.serialize(
                     {
                         "$type": "shoutem.billing.recurly-subscribe-actions",
                         "billingInfoToken": None,
@@ -129,7 +129,7 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
                     })
             }))
 
-            purchase = json_api_doc.parse(purchase_res.json())
+            purchase = json_api_doc.deserialize(purchase_res.json())
             errors.exit_if_errors(purchase)
             print("[{}] Created subscription for app {} ({}) with plan {}".format(env, app["id"], app["name"], subscription["plan"]["id"]))
 

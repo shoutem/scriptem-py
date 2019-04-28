@@ -7,7 +7,7 @@ import re
 def execute(plan_id, app_filter, username, password, env):
     billing_api = config.get_billing_endpoint(env)
     plan_res = network.get(*auth.as_admin(env, "{}/v1/plans/{}".format(billing_api, plan_id)))
-    plan = json_api_doc.parse(plan_res.json())
+    plan = json_api_doc.deserialize(plan_res.json())
 
     if "errors" in plan:
         print(plan["errors"][0]["detail"])
@@ -22,7 +22,7 @@ def execute(plan_id, app_filter, username, password, env):
             "page[limit]": 99999999
         }
     }))
-    apps = json_api_doc.parse(apps_res.json())
+    apps = json_api_doc.deserialize(apps_res.json())
 
     # filter apps out by those that match the provided regex
     app_re = re.compile(app_filter)
@@ -36,7 +36,7 @@ def execute(plan_id, app_filter, username, password, env):
     for app in filtered:
         purchase_plan_endpoint = "{}/v1/accounts/me/subscriptions/application:{}/actions/recurly/subscribe".format(billing_api, app["id"])
         purchase_res = network.post(*auth.as_user(username, password, env, purchase_plan_endpoint, {
-            "body": json_api_doc.encode(
+            "body": json_api_doc.serialize(
                 data={
                     "$type": "shoutem.billing.recurly-subscribe-actions",
                     "billingInfoToken": None,
@@ -47,7 +47,7 @@ def execute(plan_id, app_filter, username, password, env):
                 })
         }))
 
-        purchase = json_api_doc.parse(purchase_res.json())
+        purchase = json_api_doc.deserialize(purchase_res.json())
 
         if "errors" in purchase:
             print(purchase["errors"][0]["detail"] or purchase["errors"][0]["code"])

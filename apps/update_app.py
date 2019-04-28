@@ -9,7 +9,7 @@ def execute(extensions_with_version, app_filter, user, env):
             "filter[owner.id]": user,
         }
     }))
-    apps = json_api_doc.parse(apps_res.json())
+    apps = json_api_doc.deserialize(apps_res.json())
     errors.exit_if_errors(apps)
 
     # filter apps out by those that match the provided regex
@@ -38,7 +38,7 @@ def execute(extensions_with_version, app_filter, user, env):
                 "filter[version]": extension_version,
             }
         }))
-        extensions = json_api_doc.parse(extension_res.json())
+        extensions = json_api_doc.deserialize(extension_res.json())
         errors.exit_if_errors(extensions)
 
         if len(extensions) == 0:
@@ -50,7 +50,7 @@ def execute(extensions_with_version, app_filter, user, env):
     apps_endpoint = config.get_apps_endpoint(env)
     for app in filtered:
         app_installations_res = network.get(*auth.as_admin(env, "{}/v1/apps/{}/installations".format(apps_endpoint, app["id"])))
-        app_installations = json_api_doc.parse(app_installations_res.json())
+        app_installations = json_api_doc.deserialize(app_installations_res.json())
         errors.exit_if_errors(app_installations)
 
         for extension_name, extension_id in extension_name_ids:
@@ -63,7 +63,7 @@ def execute(extensions_with_version, app_filter, user, env):
 
             update_extension_endpoint = "{}/v1/apps/{}/installations/{}".format(apps_endpoint, app["id"], current_installation["id"])
             update_res = network.patch(*auth.as_admin(env, update_extension_endpoint, {
-                "body": json_api_doc.encode(
+                "body": json_api_doc.serialize(
                     data={
                         "$type": "shoutem.core.installations",
                         "id": current_installation["id"],
@@ -71,7 +71,7 @@ def execute(extensions_with_version, app_filter, user, env):
                     })
             }))
 
-            update_res = json_api_doc.parse(update_res.json())
+            update_res = json_api_doc.deserialize(update_res.json())
             errors.exit_if_errors(update_res)
                 
             print("Extension installation {} updated for app {}".format(extension_name, app["id"]))

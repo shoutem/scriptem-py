@@ -9,7 +9,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
     # get the agency for the provided owner
     agency_endpoint = config.get_apps_endpoint(env) + "/v1/agencies/mine"
     agency_res = network.get(*auth.as_user(username, password, env, agency_endpoint))
-    agency = json_api_doc.parse(agency_res.json())
+    agency = json_api_doc.deserialize(agency_res.json())
     errors.exit_if_errors(agency)
 
     # get existing moderators for agency
@@ -20,7 +20,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
             "page[limit]": 99999999
         }
     }))
-    moderators = json_api_doc.parse(moderators_res.json())
+    moderators = json_api_doc.deserialize(moderators_res.json())
     existing_moderator = list(filter(lambda mod: mod["user"]["username"] == moderator_email, moderators))
 
     if existing_moderator:
@@ -29,7 +29,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
     elif prompt.yes_no("Moderator does not exist. Do you want to create it?"):
         create_moderator_endpoint = config.get_apps_endpoint(env) + "/v1/moderators/actions/create-for-user"
         create_moderator_res = network.post(*auth.as_user(username, password, env, create_moderator_endpoint, {
-            "body": json_api_doc.encode({
+            "body": json_api_doc.serialize({
                 "$type": "shoutem.core.moderator-users",
                 "password": moderator_password,
                 "username": moderator_email,
@@ -41,7 +41,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
         }))
 
         try:
-            moderator = json_api_doc.parse(create_moderator_res.json())
+            moderator = json_api_doc.deserialize(create_moderator_res.json())
             errors.exit_if_errors(moderator)
         except AttributeError:
             raise Exception("User with such email/password already exists")
@@ -56,7 +56,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
             "page[limit]": 99999999
         }
     }))
-    apps = json_api_doc.parse(apps_res.json())
+    apps = json_api_doc.deserialize(apps_res.json())
 
     # filter apps out by those that match the provided regex
     app_re = re.compile(app_filter)
@@ -70,7 +70,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
     for app in filtered:
         add_moderator_endpoint = "{}/{}/moderated-applications".format(moderators_endpoint, moderator["id"])
         moderator_res = network.post(*auth.as_user(username, password, env, add_moderator_endpoint, {
-            "body": json_api_doc.encode({
+            "body": json_api_doc.serialize({
                 "$type": "shoutem.core.moderator-applications",
                 "role": "content-editor",
                 "application": {
@@ -81,7 +81,7 @@ def execute(moderator_email, moderator_password, app_filter, username, password,
         }))
 
         try:
-            json_api_doc.parse(moderator_res.json())
+            json_api_doc.deserialize(moderator_res.json())
             print("Moderator added for {}".format(app["id"]))
         except AttributeError:
             print("Moderator already exists for {}".format(app["id"]))
