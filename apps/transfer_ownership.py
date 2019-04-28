@@ -2,9 +2,9 @@ import os
 from optparse import OptionParser
 import json_api_doc
 import re
+import time
 
-
-def execute(src_id, dest_id, app_filter, recreate_subscription, env):
+def execute(src_id, dest_id, app_filter, recreate_subscription, plan_override, env):
     users_endpoint = config.get_auth_endpoint(env) + "/v1/realms/alias:default/users/legacyUser:{}"
     # get source and destination users, mostly for the sake of ensuring user inputed the right data
     src_user_res = network.get(*auth.as_admin(env, users_endpoint.format(src_id)))
@@ -72,6 +72,9 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
     unsubscribe_endpoint = config.get_billing_endpoint(env) + "/v1/accounts/{}/subscriptions/{}/actions/recurly/cancel"
     update_app_endpoint = config.get_legacy_endpoint(env) + "/v1/apps/{}"
 
+    # throttle requests if many apps have to be transfered
+    throttle = True if len(filtered) > 10 else False
+
     for app in filtered:
         existing_subscriptions = list(filter(lambda sub: is_valid_subscription(sub, app), src_subscriptions))
 
@@ -115,6 +118,7 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
         # this will cause new invoice on the new account, this probably won't be an issue with agencies
         if recreate_subscription and existing_subscriptions:
             subscription = existing_subscriptions[0]
+            purchase_plan_id = subscription["plan"]["id"] if plan_override == "" else plan_override
             purchase_res = network.post(*auth.as_admin(
                 env,
                 subscribe_endpoint.format(dest_account["id"], app["id"]), 
@@ -124,7 +128,7 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
                         "billingInfoToken": None,
                         "plan": {
                             "$type":"shoutem.billing.plans",
-                            "id": subscription["plan"]["id"]
+                            "id": purchase_plan_id
                         }
                     })
             }))
@@ -133,6 +137,9 @@ def execute(src_id, dest_id, app_filter, recreate_subscription, env):
             errors.exit_if_errors(purchase)
             print("[{}] Created subscription for app {} ({}) with plan {}".format(env, app["id"], app["name"], subscription["plan"]["id"]))
 
+        if throttle:
+            print("Throttling...")
+            time.sleep(10)
 
 def main():
     usage = "usage: %prog [options] source_account_id destination_account_id"
@@ -146,6 +153,9 @@ def main():
     parser.add_option("-r", "--regex",
                       help="Regex to mach the application name, by default all apps will be transfered",
                       type="string", dest="regex", default=".*")
+    parser.add_option("-p", "--plan",
+                      help="If specified, every app that had a valid subscription will be subscribed to this plan instead of the original",
+                      type="string", dest="plan", default="")
 
     (options, args) = parser.parse_args()
     
@@ -154,7 +164,7 @@ def main():
     if options.env not in ['prod', 'qa', 'dev', 'local']:
         parser.error("Incorrect environment {}".format(options.env))
 
-    execute(args[0], args[1], options.regex, options.subscribe, options.env)
+    execute(args[0], args[1], options.regex, options.subscribe, options.plan, options.env)
 
 
 if __name__ == '__main__':
